@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relógio Flip</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Relógio">
+<meta name="color-scheme" content="dark">
+<style>
+:root{--bg:#000;--card:#1d1d1f;--card2:#161618;--txt:#f2f2f2;--sub:#9a9a9f;--line:#000}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);overflow:hidden;
+  font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-user-select:none;user-select:none}
+#app{height:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;
+  -webkit-align-items:center;align-items:center;-webkit-justify-content:space-around;justify-content:space-around;padding:2vh 0}
+#clock{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center}
+.card{position:relative;font-size:50vw;width:1.2em;height:1.02em;line-height:1.02em;margin:1.2vw 0;
+  -webkit-perspective:900px;perspective:900px;font-weight:700;font-variant-numeric:tabular-nums}
+.card.sec{font-size:24vw}
+.half{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:var(--card);color:var(--txt)}
+.half span{position:absolute;left:0;right:0;top:0;height:200%;text-align:center;line-height:1.02em}
+.up{top:0;border-radius:.07em .07em 0 0;border-bottom:1px solid var(--line)}
+.down{bottom:0;border-radius:0 0 .07em .07em;background:var(--card2)}
+.down span{top:-100%}
+.fl{display:none;z-index:2;-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.fl-up{top:0;-webkit-transform-origin:50% 100%;transform-origin:50% 100%;border-radius:.07em .07em 0 0}
+.fl-down{bottom:0;-webkit-transform-origin:50% 0;transform-origin:50% 0;background:var(--card2);border-radius:0 0 .07em .07em;
+  -webkit-transform:rotateX(90deg);transform:rotateX(90deg)}
+.fl-down span{top:-100%}
+.go .fl{display:block}
+.go .fl-up{-webkit-animation:fu .28s ease-in forwards;animation:fu .28s ease-in forwards}
+.go .fl-down{-webkit-animation:fd .28s .28s ease-out forwards;animation:fd .28s .28s ease-out forwards}
+@-webkit-keyframes fu{to{-webkit-transform:rotateX(-90deg)}}
+@keyframes fu{to{transform:rotateX(-90deg)}}
+@-webkit-keyframes fd{to{-webkit-transform:rotateX(0)}}
+@keyframes fd{to{transform:rotateX(0)}}
+#date{text-align:center;line-height:1.25}
+#wd{font-size:9vw;font-weight:700;text-transform:capitalize}
+#dt{font-size:6.2vw;color:var(--sub);font-weight:500}
+@media (orientation:landscape){
+  #app{padding:1vh 0}
+  #clock{-webkit-flex-direction:row;flex-direction:row}
+  .card{font-size:44vh;margin:0 1.4vh}
+  .card.sec{font-size:20vh}
+  #wd{font-size:9vh}
+  #dt{font-size:6.2vh}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="clock">
+    <div class="card" id="h"></div>
+    <div class="card" id="m"></div>
+    <div class="card sec" id="s"></div>
+  </div>
+  <div id="date"><div id="wd"></div><div id="dt"></div></div>
+</div>
+<script>
+(function(){
+  var DIAS=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+  var MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  function two(n){return n<10?"0"+n:""+n;}
+  function make(id){
+    var el=document.getElementById(id);
+    el.innerHTML='<div class="half up"><span></span></div><div class="half down"><span></span></div>'+
+      '<div class="half fl fl-up"><span></span></div><div class="half fl fl-down"><span></span></div>';
+    var sp=el.getElementsByTagName("span");
+    return {el:el,up:sp[0],down:sp[1],fu:sp[2],fd:sp[3],val:null,t:null};
+  }
+  function set(c,v){
+    if(c.val===v)return;
+    if(c.val===null){c.up.textContent=c.down.textContent=v;c.val=v;return;}
+    clearTimeout(c.t);
+    c.down.textContent=c.val;
+    c.fu.textContent=c.val;
+    c.up.textContent=v;
+    c.fd.textContent=v;
+    c.val=v;
+    c.el.className=c.el.className.replace(" go","");
+    void c.el.offsetWidth;
+    c.el.className+=" go";
+    c.t=setTimeout(function(){
+      c.down.textContent=c.val;
+      c.el.className=c.el.className.replace(" go","");
+    },600);
+  }
+  var H=make("h"),M=make("m"),S=make("s");
+  var wd=document.getElementById("wd"),dt=document.getElementById("dt");
+  function tick(){
+    var d=new Date();
+    set(H,two(d.getHours()));set(M,two(d.getMinutes()));set(S,two(d.getSeconds()));
+    wd.textContent=DIAS[d.getDay()];
+    dt.textContent=d.getDate()+" de "+MESES[d.getMonth()]+" de "+d.getFullYear();
+  }
+  tick();setInterval(tick,250);
+  document.addEventListener("touchmove",function(e){e.preventDefault();},false);
+})();
+</script>
+</body>
+</html>
